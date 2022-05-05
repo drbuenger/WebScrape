@@ -46,9 +46,3 @@ results = int(results.replace(',', ''))
 #     quote['author'] = row.img['alt'].split(" #")[1]
 #     quotes.append(quote)
    
-# filename = 'inspirational_quotes.csv'
-# with open(filename, 'w', newline='') as f:
-#     w = csv.DictWriter(f,['theme','url','img','lines','author'])
-#     w.writeheader()
-#     for quote in quotes:
-#         w.writerow(quote)
