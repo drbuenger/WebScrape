@@ -1,35 +1,50 @@
+#import bs4
 from bs4 import BeautifulSoup
 #import chrome webdriver
 from selenium import webdriver
-browser = webdriver.Chrome("chromedriver.exe")
+#functions file import
+import functions
 username = "darrinbuenger@gmail.com"
 password = str(input("Enter Password: "))
 
+#initialize driver
+driver = webdriver.Chrome("chromedriver.exe")
+
 #Open login page
-browser.get('https://www.linkedin.com/login?fromSignIn=true&trk=guest_homepage-basic_nav-header-signin')
+driver.get('https://www.linkedin.com/login?fromSignIn=true&trk=guest_homepage-basic_nav-header-signin')
 
 #Enter login info:
-elementID = browser.find_element_by_id('username')
+elementID = driver.find_element_by_id('username')
 elementID.send_keys(username)
 
-elementID = browser.find_element_by_id('password')
+elementID = driver.find_element_by_id('password')
 elementID.send_keys(password)
 #Note: replace the keys "username" and "password" with your LinkedIn login info
 elementID.submit()
 #Go to webpage
-browser.get('https://www.linkedin.com/jobs/automation-engineer-jobs-greater-seattle-area/?geoId=90000091')
+driver.get('https://www.linkedin.com/jobs/automation-engineer-jobs-greater-seattle-area/?geoId=90000091')
 #Find search box
 #jobID = browser.find_element_by_class_name('jobs-search-box__text-input')
 #Send input
 #jobID.send_keys(job)
 
+functions.check_for_popups(driver)
+functions.scroll_to_bottom(driver)
+
 #Get page source code
-src = browser.page_source
+src = driver.page_source
 soup = BeautifulSoup(src, 'lxml')
 print(soup.prettify())
 #Strip text from source code
-results = soup.find('small', {'class': 'display-flex t-12 t-black--light t-normal'}).get_text().strip().split()[0]
-results = int(results.replace(',', ''))
+jobs_html = soup.find_all('a', {'class': 'job-card-list__title'})
+job_titles = []
+  
+for title in jobs_html:
+    job_titles.append(title.text.strip())
+  
+print(job_titles)
+
+#results = int(results.replace(',', ''))
   
 # soup = BeautifulSoup(r.content, 'html5lib') # If this line causes an error, run 'pip install html5lib' or install html5lib
 # print(soup.prettify())
@@ -45,10 +60,3 @@ results = int(results.replace(',', ''))
 #     quote['lines'] = row.img['alt'].split(" #")[0]
 #     quote['author'] = row.img['alt'].split(" #")[1]
 #     quotes.append(quote)
-   
-# filename = 'inspirational_quotes.csv'
-# with open(filename, 'w', newline='') as f:
-#     w = csv.DictWriter(f,['theme','url','img','lines','author'])
-#     w.writeheader()
-#     for quote in quotes:
-#         w.writerow(quote)
