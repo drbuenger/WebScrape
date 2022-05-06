@@ -34,16 +34,21 @@ functions.scroll_to_bottom(driver)
 #Get page source code
 src = driver.page_source
 soup = BeautifulSoup(src, 'lxml')
-print(soup.prettify())
 #Strip text from source code
-jobs_html = soup.find_all('a', {'class': 'job-card-list__title'})
+#titles_html = soup.find_all('a', {'class': 'full-width artdeco-entity-lockup__title ember-view'})
+company_html = soup.find_all('a', {'class': 'job-card-container__company-name'})
+titles_html = soup.find_all('a', {'class': 'job-card-list__title'})
 job_titles = []
-  
-for title in jobs_html:
+companies = []
+for title in titles_html:
     job_titles.append(title.text.strip())
+
+ 
+for company in company_html:
+    companies.append(company.text.strip())
   
 print(job_titles)
-
+print(companies)
 #results = int(results.replace(',', ''))
   
 # soup = BeautifulSoup(r.content, 'html5lib') # If this line causes an error, run 'pip install html5lib' or install html5lib
