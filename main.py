@@ -10,6 +10,9 @@ import functions
 import pandas as pd
 import time
 
+
+
+
 time_to_sleep = 1
 max_results = 20
 
