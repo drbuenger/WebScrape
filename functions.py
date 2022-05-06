@@ -1,42 +1,48 @@
 import time
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
+
 
 def scroll_to_bottom(driver):
-    start = time.time()
-    
-    # will be used in the while loop
-    initialScroll = 0
-    finalScroll = 1000
-    
+    SCROLL_PAUSE_TIME = 0.5
+
+    # Get scroll height
+    last_height = driver.execute_script("return document.body.scrollHeight")
+
     while True:
-        driver.execute_script(f"window.scrollTo({initialScroll},{finalScroll})")
-        # this command scrolls the window starting from
-        # the pixel value stored in the initialScroll 
-        # variable to the pixel value stored at the
-        # finalScroll variable
-        initialScroll = finalScroll
-        finalScroll += 1000
-    
-        # we will stop the script for 3 seconds so that 
-        # the data can load
-        time.sleep(3)
-        # You can change it as per your needs and internet speed
-    
-        end = time.time()
-    
-        # We will scroll for 20 seconds.
-        # You can change it as per your needs and internet speed
-        if round(end - start) > 20:
+        # Scroll down to bottom
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+        # Wait to load page
+        time.sleep(SCROLL_PAUSE_TIME)
+
+        # Calculate new scroll height and compare with last scroll height
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
             break
+        last_height = new_height
 
 def check_for_popups(driver):
-    #Import exception check
-    from selenium.common.exceptions import NoSuchElementException
-    try:
-        if driver.find_element_by_class_name('msg-overlay-list-bubble--is-minimized') is not None:
-            pass
-    except NoSuchElementException:
-        try:
-            if driver.find_element_by_class_name('msg-overlay-bubble-header') is not None:
-                driver.find_element_by_class_name('msg-overlay-bubble-header').click()
-        except NoSuchElementException:
-            pass
+
+    #if driver.find_element_by_class_name('msg-overlay-list-bubble--is-minimized') is not None:
+    found_popup = len(driver.find_elements(By.CLASS_NAME, 'msg-overlay-list-bubble--is-minimized'))
+    if found_popup > 0:
+        return
+    else:
+        #if driver.find_element_by_class_name('msg-overlay-list-bubble') is not None:
+        #   driver.find_element_by_class_name('msg-overlay-list-bubble').click()
+        driver.find_element(By.CLASS_NAME,'msg-overlay-bubble-header__details').find_element(By.CLASS_NAME, "msg-overlay-bubble-header__button").click()
+        return
+
+def open_login(driver, username, password):
+    #Open login page
+    driver.get('https://www.linkedin.com/login?fromSignIn=true&trk=guest_homepage-basic_nav-header-signin')
+    #Enter login info:
+    elementID = driver.find_element(By.ID,'username')
+    elementID.send_keys(username)
+    elementID = driver.find_element(By.ID, 'password')
+    elementID.send_keys(password)
+    elementID.submit()
+    #Note: replace the keys "username" and "password" with your LinkedIn login info
+    return
+
