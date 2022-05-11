@@ -46,3 +46,15 @@ def open_login(driver, username, password):
     #Note: replace the keys "username" and "password" with your LinkedIn login info
     return
 
+def create_urls(search_url,sb):
+    urls =[]
+    for keywords in sb.keywords:
+        url = search_url
+        format_keywords = keywords.replace(" ","%20")
+        url += format_keywords
+        url += "%20"
+    for remove in sb.remove_words:
+        url += "-" + remove
+        url += "&location=" + sb.locations.replace(" ", "%20")
+        urls.append(url)
+    return urls
