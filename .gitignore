@@ -7933,3 +7933,4 @@ venv/Lib/site-packages/setuptools-49.2.1.dist-info/zip-safe
 venv/Scripts/easy_install-3.9.exe
 venv/Scripts/easy_install.exe
 __pycache__/functions.cpython-39.pyc
+__pycache__/custom_classes.cpython-39.pyc
