@@ -30,7 +30,10 @@ prefs = {"credentials_enable_service": False,
 options.add_experimental_option("prefs", prefs)
 #options.add_experimental_option("credentials_enable_service", False)
 #options.add_experimental_option("profile.password_manager_enabled", False)
-service = ChromeService(executable_path=r"C:\Users\dbuenger\PycharmProjects\WebScrape\chromedriver.exe")
+#service = ChromeService(executable_path=r"C:\Users\dbuenger\PycharmProjects\WebScrape\chromedriver.exe")
+service = ChromeService(executable_path=r"C:\Users\darri\PycharmProjects\WebScrape\chromedriver.exe")
+
+
 driver = webdriver.Chrome(service=service, options=options)
 
 
