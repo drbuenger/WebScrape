@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 #functions file import
 import functions
+from custom_classes import search_bundle
 #import pandas
 import pandas as pd
 import time
@@ -38,22 +39,18 @@ driver = webdriver.Chrome(service=service, options=options)
 
 
 #build urls
+
 base_url = "https://www.linkedin.com/"
 search_url = "https://www.linkedin.com/jobs/search/?&keywords="
-search_keywords = ["automation engineer", "process engineer"]
-companies_to_remove =["amazon", "meta", "microsoft", "google"]
-location = "United States"
-urls=[]
-for keywords in search_keywords:
-    url = search_url
-    format_keywords = keywords.replace(" ","%20")
-    url += format_keywords
-    url += "%20"
-    for remove in companies_to_remove:
-        url += "-" + remove
-    url += "&location=" + location.replace(" ", "%20")
-    urls.append(url)
 
+search = search_bundle
+search.keywords = ["automation engineer", "process engineer"]
+search.remove_words =["amazon", "meta", "microsoft", "google"]
+search.locations = "United States"
+urls=[]
+
+
+urls = functions.create_urls(search_url, search)
 
 functions.open_login(driver, username, password)
 
