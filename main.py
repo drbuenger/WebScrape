@@ -46,7 +46,7 @@ search_url = "https://www.linkedin.com/jobs/search/?&keywords="
 search = search_bundle
 search.keywords = ["automation engineer", "process engineer"]
 search.remove_words =["amazon", "meta", "microsoft", "google"]
-search.locations = "United States"
+search.locations = ["United States", "Greater Seattle Area"]
 urls=[]
 
 

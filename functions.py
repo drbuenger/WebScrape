@@ -53,8 +53,10 @@ def create_urls(search_url,sb):
         format_keywords = keywords.replace(" ","%20")
         url += format_keywords
         url += "%20"
-    for remove in sb.remove_words:
-        url += "-" + remove
-        url += "&location=" + sb.locations.replace(" ", "%20")
-        urls.append(url)
+        for remove in sb.remove_words:
+            url += "%20"
+            url += "-" + remove
+        for location in sb.locations:
+            url += "&location=" + location.replace(" ", "%20")
+            urls.append(url)
     return urls
