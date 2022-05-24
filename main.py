@@ -6,6 +6,8 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 #functions file import
 import linkedin_functions
+import bluemountain_functions
+
 #import pandas
 import pandas as pd
 import time
@@ -34,3 +36,7 @@ driver = webdriver.Chrome(service=service, options=options)
 if which_site == "linkedin":
     #build urls
     linkedin_functions.scrape_linkedin(driver, username, password)
+
+if which_site == "bluemountain":
+    #build urls
+    bluemountain_functions.scrape_bluemountain(driver, username, password)
