@@ -49,7 +49,13 @@ def open_login(driver, username, password):
     return
 
 def create_urls(search_url,sb):
+    search_name = {}
     urls =[]
+    date_modifiers =[]
+    for days in sb.date_posted:
+        seconds = int(days) * 24 * 60 * 60
+        date_filter = 'f_TPR=r' + str(seconds)
+        date_modifiers.append(date_filter)
     for keywords in sb.keywords:
         url = search_url
         format_keywords = keywords.replace(" ","%20")
@@ -59,9 +65,12 @@ def create_urls(search_url,sb):
             url += "%20"
             url += "-" + remove
         for location in sb.locations:
-            url += "&location=" + location.replace(" ", "%20")
-            urls.append(url)
-    return urls
+            location_url = url + "&location=" + location.replace(" ", "%20")
+            search_name[location_url] = keywords + "_" + location
+            urls.append(location_url)
+       
+
+    return urls, date_modifiers, search_name
 
 def scrape_linkedin(driver, username, password):
     base_url = "https://www.linkedin.com/"
@@ -71,61 +80,88 @@ def scrape_linkedin(driver, username, password):
 
 
     search = search_bundle
-    search.keywords = ["automation engineer", "process engineer"]
-    search.remove_words =["amazon", "meta", "microsoft", "google"]
-    search.locations = ["United States", "Greater Seattle Area"]
+    search.keywords = [
+        "Senior Automation Engineer",
+        "IT MES Engineer",
+        "Manufacturing Analytics Manager",
+        "MS and T Process Automation",
+        "Senior Manufacturing Engineer"]
+    search.remove_words =["amazon", "meta", "microsoft", "google", 'blue origin', 'dice']
+    search.locations = ["Greater Seattle Area"]
+    search.date_posted = ['7', "1"]
     urls=[]
 
 
-    urls = create_urls(search_url, search)
+    urls, date_modifiers, search_name = create_urls(search_url, search)
 
     open_login(driver, username, password)
 
     #Go to webpage
     for url in urls:
-        print(url)
-        driver.get(url)
-        time.sleep(2)
-        check_for_popups(driver)
-        jobs_block= driver.find_element(By.CSS_SELECTOR, '.jobs-search-results__list')
-        jobs_list= jobs_block.find_elements(By.CSS_SELECTOR, '.jobs-search-results__list-item')
-        #of results
-        result_string = driver.find_element(By.CSS_SELECTOR, 'small.jobs-search-results-list__text').text
-        string_len_results = len(result_string)
-        result_string_trim = result_string[0:string_len_results-8]
-        result_count = int(result_string_trim.replace(",",""))
-        print("results count: " + str(result_count))
-        if result_count > max_results:
-            result_count = max_results
-        initial_columns = ['Title', 'Company', 'Location', 'Link']
+        for date in date_modifiers:
+            print(url)
+            driver.get(url)
+            time.sleep(2)
+            check_for_popups(driver)
+            url_modified = url.replace("&keywords=", date + '&keywords=')
+            driver.get(url_modified)
+            check_for_popups(driver)
+            jobs_block= driver.find_element(By.CSS_SELECTOR, '.jobs-search-results-list')
+            jobs_list= jobs_block.find_elements(By.CSS_SELECTOR, '.job-card-list__entity-lockup')
+            #of results
+            try:
+                result_string = driver.find_element(By.CSS_SELECTOR, 'small.jobs-search-results-list__text').text
+                string_len_results = len(result_string)
+                result_string_trim = result_string[0:string_len_results-8]
+                result_count = int(result_string_trim.replace(",",""))
+                print("results count: " + str(result_count))
+                if result_count > max_results:
+                    result_count = max_results
+                initial_columns = ['Title', 'Company', 'Location', 'Link']
 
-        j = 0
-        df = pd.DataFrame(columns=initial_columns)
-        for i in range(0,result_count):
-            elements = driver.find_elements(By.CSS_SELECTOR, '.jobs-search-results__list-item')
-            driver.execute_script("arguments[0].scrollIntoView(true);", elements[j])
-            time.sleep(time_to_sleep)
-            df2 = pd.DataFrame(columns=initial_columns, data=[["title","company","location",'Link']])
-            title = elements[j].find_element(By.CSS_SELECTOR, '.job-card-list__title').text
-            company = elements[j].find_element(By.CSS_SELECTOR, '.job-card-container__company-name').text
-            location = elements[j].find_element(By.CSS_SELECTOR, '.job-card-container__metadata-item').text
-            link = elements[j].find_element(By.CSS_SELECTOR, '.job-card-list__title').get_attribute('href')
-            df2.iloc[0] = [title,company,location,link]
-            df = pd.concat([df,df2], ignore_index=True)
-            j = j  + 1
-        print(df.head(15))
+                j = 0
+                df = pd.DataFrame(columns=initial_columns)
+                for i in range(0,result_count):
+                    elements = driver.find_elements(By.CSS_SELECTOR, '.jobs-search-results__list-item')
+                    driver.execute_script("arguments[0].scrollIntoView(true);", elements[j])
+                    time.sleep(time_to_sleep)
+                    df2 = pd.DataFrame(columns=initial_columns, data=[["title","company","location",'Link']])
+                    try:
+                        title = elements[j].find_element(By.CSS_SELECTOR, '.job-card-list__title').text
+                    except:
+                        title = "Not Found"
+                    try:
+                        company = elements[j].find_element(By.CSS_SELECTOR, '.job-card-container__company-name').text
+                    except:
+                        company = "Not Found"
+                    try:
+                        location = elements[j].find_element(By.CSS_SELECTOR, '.job-card-container__metadata-item').text
+                    except:
+                        location = "Not Found"
+                    try:
+                        link = elements[j].find_element(By.CSS_SELECTOR, '.job-card-list__title').get_attribute('href')
+                    except:
+                        link = "Not Found"
+                    df2.iloc[0] = [title,company,location,link]
+                    df = pd.concat([df,df2], ignore_index=True)
+                    j = j  + 1
+                print(df.head(15))
+                file_name = search_name[url] + "_" + date
+                df.to_csv(file_name, index=False, header=True)
+            except:
+                continue
 
-        #Get page source code
-        src = driver.page_source
-        soup = BeautifulSoup(src, 'lxml')
-        company_html = soup.find_all('a', {'class': 'job-card-container__company-name'})
-        titles_html = soup.find_all('a', {'class': 'job-card-list__title'})
-        location_html = soup.find_all('a', {'class': 'job-card-container__metadata-item'})
-        job_titles = []
-        companies = []
+            #Get page source code
+            src = driver.page_source
+            soup = BeautifulSoup(src, 'lxml')
+            company_html = soup.find_all('a', {'class': 'job-card-container__company-name'})
+            titles_html = soup.find_all('a', {'class': 'job-card-list__title'})
+            location_html = soup.find_all('a', {'class': 'job-card-container__metadata-item'})
+            job_titles = []
+            companies = []
 
-        for title in titles_html:
-            job_titles.append(title.text.strip())
-        
-        for company in company_html:
-            companies.append(company.text.strip())
+            for title in titles_html:
+                job_titles.append(title.text.strip())
+            
+            for company in company_html:
+                companies.append(company.text.strip())

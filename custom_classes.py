@@ -3,3 +3,4 @@ class search_bundle:
     self.keywords = []
     self.locations = locations
     self.remove_words = []
+    self.date_posted = []
